@@ -16,22 +16,6 @@ make_adj_template <- function() {
   )
   
 }
-calc_sym_adj <- function(sym_template, adj_template) {
-  
-  sym_template %>% 
-    cross_join(
-      adj_template
-    ) %>% 
-    mutate(
-      x = x + x_delta,
-      y = y + y_delta,
-    ) %>% 
-    distinct(x, y) %>% 
-    mutate(
-      is_sym_adj = TRUE
-    )
-    
-}
 make_grid_long_adj <- function(grid_template, adj_template) {
   
   grid_template %>% 
@@ -66,7 +50,6 @@ update_sym_adj <- function(grid_long, adj_template) {
   
 }
 
-## 543867
 
 adj_template <- make_adj_template()
 
@@ -91,27 +74,6 @@ grid_long <-
     is_sym = str_detect(val, "[^.\\d]"),
     is_star = val == "*",
   )
-
-# %>% 
-#   mutate(
-#     is_sym_adj = FALSE
-#   ) %>% 
-#   update_sym_adj(
-#     adj_template
-#   ) %>% 
-#   mutate(
-#     number_id = consecutive_id(y, is_digit)
-#   ) %>% 
-#   filter(is_digit) %>% 
-#   group_by(number_id) %>% 
-#   filter(any(is_sym_adj)) %>% 
-#   summarise(
-#     number = paste0(val, collapse = "") %>% as.integer()
-#   ) %>% 
-#   summarise(
-#     sum(number)
-#   )
-
 
 
 grid_long_digit <- 
@@ -190,46 +152,4 @@ grid_long_star_adj %>%
 
 
 
-
-grid_long0 <-
-  grid_raw %>% 
-  mutate(
-    y = seq_len(n()), 
-    .before = grid_data
-  ) %>% 
-  separate_wider_position(
-    cols = grid_data,
-    widths = setNames(rep(1, WIDTH), seq_len(WIDTH))
-  ) %>% 
-  pivot_longer(
-    cols = -y,
-    names_to = "x",
-    values_to = "val"
-  ) %>% 
-  mutate(
-    is_digit = str_detect(val, "\\d"),
-    is_sym = str_detect(val, "[^.]") & !is_digit
-  ) %>% 
-  calc_grid_adj(WIDTH)
-
-calc_grid_adj <- function(grid_long, width) {
-  
-  length <- nrow(grid_long)
-  
-  grid_long %>% 
-    mutate(
-      is_sym_adj = 
-        (shift(is_sym, n = 1, fill = FALSE) & x != 1) |   
-        (shift(is_sym, n = -1, fill = FALSE) & x != !!width) |
-        
-        (shift(is_sym, n = !!width + 1, fill = FALSE) & x != 1 & y != 1) |  
-        (shift(is_sym, n = !!width, fill = FALSE) & y != 1) |  
-        (shift(is_sym, n = !!width - 1, fill = FALSE) & x != 1 & y != 1) |  
-        
-        (shift(is_sym, n = -!!width + 1, fill = FALSE) & x != !!width & y != !!length) |  
-        (shift(is_sym, n = -!!width, fill = FALSE) & x != !!width) |  
-        (shift(is_sym, n = -!!width - 1, fill = FALSE) & x != !!width & y != !!length)
-    )
-  
-}
 
