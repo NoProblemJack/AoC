@@ -118,7 +118,7 @@ grid_long_star_adj %>%
   ) %>% 
   group_by(star_id) %>% 
   distinct(
-    star_id, number
+    star_id, number_id, number
   ) %>% 
   filter(n() == 2) %>% 
   summarise(
