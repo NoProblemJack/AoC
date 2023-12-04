@@ -68,9 +68,9 @@ p4_copy_cards <- function(copies, winners) {
 
 cards %>% 
   mutate(
-    ## append "copies" field - defined as p4_copy_cards called with a vector of
+    ## append "copies" column - defined as p4_copy_cards called with a vector of
     ## 1's and the 'winners' column
     copies = p4_copy_cards(rep(1, n()), winners)
   ) %>% 
-  ## sum "copies" field
+  ## sum "copies" column
   summarise(sum(copies))
