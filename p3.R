@@ -116,10 +116,10 @@ grid_long_star_adj %>%
     by = c("x", "y"),
     relationship = "one-to-one"
   ) %>% 
-  group_by(star_id) %>% 
   distinct(
     star_id, number_id, number
   ) %>% 
+  group_by(star_id) %>% 
   filter(n() == 2) %>% 
   summarise(
     gear_ratio = number[1] * number[2]
