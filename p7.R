@@ -114,20 +114,21 @@ data <-
   separate_wider_position(
     cols = hand,
     widths = setNames(rep(1, 5), paste0("card_", seq_len(5))),
-    cols_remove= FALSE
-  ) %>% 
+    cols_remove = FALSE
+  )
+
+
+#### part1 ####.
+
+data_p1 <- 
+  data %>% 
   mutate(
     hand_type = 
       map_int(
         hand,
         eval_hand
       )
-  )
-
-
-#### part1 ####.
-
-data %>% 
+  ) %>% 
   mutate(across(
     starts_with("card_"), 
     ~case_when(
@@ -147,6 +148,8 @@ data %>%
   ) %>% 
   summarise(sum(rank*bid))
 
+data_p1 %>% 
+  summarise(sum(rank*bid))
 
 
 
@@ -157,11 +160,6 @@ data_p2 <-
   mutate(
     best_card = map_chr(str_remove(hand, "J"), get_best_card),
     hand2 = str_replace_all(hand, "J", best_card),
-    hand_type = 
-      map_int(
-        hand2,
-        eval_hand
-      )
   ) %>% 
   mutate(across(
     starts_with("card_"), 
@@ -185,6 +183,7 @@ data_p2 <-
 
 
 ## 249467142 wrong
+## 248266145 wrong
 data_p2 %>% 
   summarise(sum(rank*bid))
 

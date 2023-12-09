@@ -184,6 +184,7 @@ seeds2_max_id <- seeds2$source_end %>% max()
 maps2 <- 
   body$mapping_data %>% 
   setNames(headers$header) %>% 
+  ## bug!!! seeds2_max_id is not always the corect max to pass - oh well
   map(~complete_ranges(.x, seeds2_max_id))
 
 
