@@ -145,8 +145,8 @@ data_p1 <-
   ) %>% 
   mutate(
     rank = seq_len(n())
-  ) %>% 
-  summarise(sum(rank*bid))
+  )
+
 
 data_p1 %>% 
   summarise(sum(rank*bid))
@@ -160,6 +160,11 @@ data_p2 <-
   mutate(
     best_card = map_chr(str_remove_all(hand, "J"), get_best_card),
     hand2 = str_replace_all(hand, "J", best_card),
+    hand_type = 
+      map_int(
+        hand2,
+        eval_hand
+      )
   ) %>% 
   mutate(across(
     starts_with("card_"), 
