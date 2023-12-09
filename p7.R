@@ -158,7 +158,7 @@ data_p1 %>%
 data_p2 <- 
   data %>% 
   mutate(
-    best_card = map_chr(str_remove(hand, "J"), get_best_card),
+    best_card = map_chr(str_remove_all(hand, "J"), get_best_card),
     hand2 = str_replace_all(hand, "J", best_card),
   ) %>% 
   mutate(across(
