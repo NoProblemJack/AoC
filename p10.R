@@ -66,7 +66,6 @@ mark_regions <- function(syms) {
     else if (syms[i] == "L")
       state <- state - 1L
     else
-      ## do nothing
       pipe <- FALSE
     
     
