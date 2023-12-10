@@ -67,10 +67,8 @@ mark_regions <- function(syms) {
       state <- state - 1L
     else
       ## do nothing
-      TRUE
+      pipe <- FALSE
     
-    
-    pipe <- FALSE
     
     if (state %in% c(-2L, 2L)) {
       marker <- -1L * marker
