@@ -1,9 +1,6 @@
 library(tidyverse)
 library(data.table)
 
-grid <- read_csv("inputs/10.txt", col_names = "grid_data")
-WIDTH <- grid[1,, drop = TRUE] %>% str_length()
-
 make_adj_template <- function() {
   
   tribble(
@@ -17,86 +14,6 @@ make_adj_template <- function() {
   )
 
 }
-
-
-grid_long <-
-  grid %>% 
-  mutate(
-    y = seq_len(n()), 
-    .before = grid_data
-  ) %>% 
-  separate_wider_position(
-    cols = grid_data,
-    widths = setNames(rep(1, WIDTH), seq_len(WIDTH))
-  ) %>% S
-  pivot_longer(
-    cols = -y,
-    names_to = "x",
-    values_to = "sym",
-    names_transform = as.integer
-  ) %>% 
-  left_join(
-    make_adj_template(),
-    by = "sym",
-    relationship = "many-to-one"
-  ) %>% 
-  mutate(
-    x1 = x + x1_d,
-    y1 = y + y1_d,
-    x2 = x + x2_d,
-    y2 = y + y2_d,
-  ) %>% 
-  as.data.table()
-
-S_pos <- grid_long[sym == "S"]
-
-
-S_neighbours <- 
-  grid_long[
-    (x1 == S_pos$x & y1 == S_pos$y) |
-      (x2 == S_pos$x & y2 == S_pos$y)
-  ]
-
-grid_long[
-  sym == "S",
-  `:=`(
-    x1 = S_neighbours[1, x],
-    y1 = S_neighbours[1, y],
-    x2 = S_neighbours[2, x],
-    y2 = S_neighbours[2, y]
-  )
-]
-
-# grid_long[
-#   grid_long,
-#   on = .(x = x1, y = y1),
-#   `:=`(
-#     x1 = if_else(sym == "S", i.x, x.x1),
-#     y1 = if_else(sym == "S", i.y, x.y1)
-#   )
-# ][
-#   grid_long,
-#   on = .(x = x2, y = y2),
-#   `:=`(
-#     x2 = if_else(sym == "S", i.x, x.x2),
-#     y2 = if_else(sym == "S", i.y, x.y2)
-#   )
-# ]
-
-grid_long[, id := seq_len(.N)]
-grid_long[
-  grid_long,
-  on = .(x1 = x, y1 = y),
-  id1 := i.id
-]
-grid_long[
-  grid_long,
-  on = .(x2 = x, y2 = y),
-  id2 := i.id
-]
-
-walk_the_pipe(grid_long)
-
 walk_the_pipe <- function(grid_long) {
   
   get_unwalked_neighbours <- function(ids_, grid_long) {
@@ -108,7 +25,7 @@ walk_the_pipe <- function(grid_long) {
   }  
   
   grid_long[, dist := NA_integer_]
-  unwalked_places <- grid_long[sym == "S", id]
+  unwalked_places <- grid_long[is_S == TRUE, id]
   dist_ <- 0L
  
   while (TRUE) {
@@ -126,4 +43,129 @@ walk_the_pipe <- function(grid_long) {
   dist_ 
 
 }
+mark_regions <- function(syms) {
+  
+  state <- 0L
+  marker <- -1L
+  region <- integer(length(syms))
+  
+  for (i in seq_along(syms)) {
+    
+    pipe <- TRUE
+    if (syms[i] == "|")
+      state <- 2L
+    else if (syms[i] == "-")
+      ## do nothing
+      TRUE
+    else if (syms[i] == "F")
+      state <- state + 1L
+    else if (syms[i] == "J")
+      state <- state + 1L
+    else if (syms[i] == "7")
+      state <- state - 1L
+    else if (syms[i] == "L")
+      state <- state - 1L
+    else
+      ## do nothing
+      TRUE
+    
+    
+    pipe <- FALSE
+    
+    if (state %in% c(-2L, 2L)) {
+      marker <- -1L * marker
+      state <- 0L
+    }
+    
+    if (!pipe)
+      region[i] <- marker
+    
+  }
+
+  region
+  
+}
+
+grid <- read_csv("inputs/10.txt", col_names = "grid_data")
+WIDTH <- grid[1,, drop = TRUE] %>% str_length()
+
+grid_long <-
+  grid %>% 
+  mutate(
+    y = seq_len(n()), 
+    .before = grid_data
+  ) %>% 
+  separate_wider_position(
+    cols = grid_data,
+    widths = setNames(rep(1, WIDTH), seq_len(WIDTH))
+  ) %>% 
+  pivot_longer(
+    cols = -y,
+    names_to = "x",
+    values_to = "sym",
+    names_transform = as.integer
+  ) %>% 
+  mutate(
+    is_S = sym == "S",
+    ## manual hack to save headaches!
+    sym = if_else(is_S, "F", sym)
+  ) %>% 
+  left_join(
+    make_adj_template(),
+    by = "sym",
+    relationship = "many-to-one"
+  ) %>% 
+  mutate(
+    x1 = x + x1_d,
+    y1 = y + y1_d,
+    x2 = x + x2_d,
+    y2 = y + y2_d,
+  ) %>% 
+  as.data.table()
+
+
+grid_long[, id := seq_len(.N)]
+grid_long[
+  grid_long,
+  on = .(x1 = x, y1 = y),
+  id1 := i.id
+]
+grid_long[
+  grid_long,
+  on = .(x2 = x, y2 = y),
+  id2 := i.id
+]
+
+
+#### part 1 ####.
+
+## 6931
+walk_the_pipe(grid_long)
+
+
+#### part 2 ####.
+
+## replace pipe parts that are not on the main pipe
+grid_long[
+  is.na(dist), ## determined in part 1
+  sym := "."
+]
+
+grid_long[,
+  region := mark_regions(sym),
+  by = "y"
+]
+
+## 357
+grid_long %>% count(region)
+
+
+
+
+
+
+
+
+
+
 

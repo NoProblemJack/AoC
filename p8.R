@@ -69,9 +69,6 @@ edges[
   r_id := i.id
 ]
 
-edges[
-  CJ(1:3)
-]
 
 states <-
   edges %>% 
