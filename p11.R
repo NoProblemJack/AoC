@@ -1,9 +1,6 @@
 library(tidyverse)
 library(bit64)
 
-grid <- read_csv("inputs/11.txt", col_names = "grid_data")
-
-
 mark_empties <- function(is_empty_row, is_empty_col) {
   
   if (is_empty_row && is_empty_col)
@@ -14,6 +11,10 @@ mark_empties <- function(is_empty_row, is_empty_col) {
   1
   
 }
+
+
+grid <- read_csv("inputs/11.txt", col_names = "grid_data")
+WIDTH <- grid[1,, drop = TRUE] %>% str_length()
 
 grid_long <-
   grid %>% 
